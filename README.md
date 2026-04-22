@@ -68,8 +68,14 @@ Defined in `.env.example`:
 - `PGSSL` (optional)
 - `VITE_API_BASE_URL`
 
+`VITE_API_BASE_URL` guidance:
+
+- Keep it empty for deployment so frontend requests use relative `/api/*` paths.
+- Optional for local development; if set, use `http://localhost:5000`.
+
 ## Notes
 
 - Vite dev proxy forwards `/api/*` requests to `http://localhost:5000`.
+- Serverless handlers in `/api` are deployment-ready for platforms like Vercel.
 - Tailwind is integrated via the official `@tailwindcss/vite` plugin.
 - This commit is scaffold-only. Feature logic is added incrementally in later features.
