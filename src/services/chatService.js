@@ -1,3 +1,4 @@
+import { authFetch } from './authFetch'
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
 
 function getChatEndpoint() {
@@ -20,18 +21,18 @@ export async function getChatHistory({ articleId, limit = 50 } = {}) {
   if (articleId) params.set('articleId', articleId)
   if (limit) params.set('limit', String(limit))
 
-  const response = await fetch(`${getChatEndpoint()}?${params.toString()}`)
+  const response = await authFetch(`${getChatEndpoint()}?${params.toString()}`)
   const payload = await parseResponse(response)
   return Array.isArray(payload.messages) ? payload.messages : []
 }
 
 export async function postChatMessage({ articleId, userId, message } = {}) {
-  const response = await fetch(getChatEndpoint(), {
+  const response = await authFetch(getChatEndpoint(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ articleId, userId, message }),
+    body: JSON.stringify({ articleId, message }),
   })
 
   const payload = await parseResponse(response)

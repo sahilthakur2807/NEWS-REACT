@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import AuthModal from '../auth/AuthModal'
+import { useAuth } from '../auth/AuthProvider'
 
 function formatChatTimestamp(value) {
   if (!value) {
@@ -19,11 +21,26 @@ function formatChatTimestamp(value) {
   })
 }
 
-function ArticleChat({ messages, error, isLoadingHistory, onSendMessage, modeLabel = 'Database' }) {
+function ArticleChat({
+  messages,
+  error,
+  isLoadingHistory,
+  onSendMessage,
+  modeLabel = 'Database',
+  requireAuth = true,
+}) {
   const [draftMessage, setDraftMessage] = useState('')
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const { user, isAuthReady } = useAuth()
+  const isAuthed = Boolean(user)
 
   const handleSubmit = (event) => {
     event.preventDefault()
+
+    if (requireAuth && isAuthReady && !isAuthed) {
+      setIsAuthModalOpen(true)
+      return
+    }
 
     const sent = onSendMessage(draftMessage)
 
@@ -59,21 +76,41 @@ function ArticleChat({ messages, error, isLoadingHistory, onSendMessage, modeLab
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-2">
+        {requireAuth && isAuthReady && !isAuthed ? (
+          <div className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            <p className="font-medium">Login required</p>
+            <p className="mt-1 text-amber-800">
+              Please log in to start or continue this conversation.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="mt-3 inline-flex items-center border border-amber-900 bg-amber-900 px-3 py-1.5 text-xs uppercase tracking-wide text-amber-50 transition hover:bg-amber-800"
+            >
+              Login
+            </button>
+          </div>
+        ) : null}
+
         <textarea
           value={draftMessage}
           onChange={(event) => setDraftMessage(event.target.value)}
           rows={3}
           placeholder="Type your message"
+          disabled={requireAuth && isAuthReady && !isAuthed}
           className="w-full resize-y border border-zinc-300 bg-white p-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-500"
         />
 
         <button
           type="submit"
+          disabled={requireAuth && isAuthReady && !isAuthed}
           className="inline-flex items-center border border-zinc-900 bg-zinc-900 px-4 py-2 text-xs uppercase tracking-wide text-zinc-50 transition hover:bg-zinc-800"
         >
           Send Message
         </button>
       </form>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </section>
   )
 }

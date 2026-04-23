@@ -6,8 +6,10 @@ import FavoritesSection from '../components/FavoritesSection'
 import { fetchNews } from '../services/newsApi'
 import { cacheArticles } from '../services/articleCache'
 import useFavorites from '../hooks/useFavorites'
+import { useAuth } from '../auth/AuthProvider'
 
 function HomePage() {
+  const { user, isAuthReady } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
   const [activeCategory, setActiveCategory] = useState('top stories')
@@ -73,8 +75,17 @@ function HomePage() {
 
     hasLoadedInitialHeadlines.current = true
     loadNews({ category: 'top stories' })
-    loadFavorites()
   }, [loadNews, loadFavorites])
+
+  useEffect(() => {
+    if (!isAuthReady) {
+      return
+    }
+
+    if (user) {
+      loadFavorites()
+    }
+  }, [isAuthReady, user, loadFavorites])
 
   return (
     <main className="min-h-screen bg-zinc-100 px-4 py-4 text-zinc-900 sm:px-6 lg:px-8">
@@ -101,6 +112,7 @@ function HomePage() {
           isLoading={isLoadingFavorites}
           errorMessage={favoritesError}
           onRemoveFavorite={deleteFavorite}
+          loginHint={isAuthReady && !user ? 'Log in to see and manage your saved favorites.' : ''}
         />
       </div>
     </main>

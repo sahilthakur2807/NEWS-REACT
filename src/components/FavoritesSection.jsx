@@ -1,4 +1,10 @@
-function FavoritesSection({ favorites = [], isLoading = false, errorMessage = '', onRemoveFavorite }) {
+function FavoritesSection({
+  favorites = [],
+  isLoading = false,
+  errorMessage = '',
+  onRemoveFavorite,
+  loginHint = '',
+}) {
   if (isLoading) {
     return (
       <section className="rounded-[28px] bg-zinc-200 p-4 shadow-sm ring-1 ring-zinc-300/70 sm:p-6">
@@ -20,6 +26,8 @@ function FavoritesSection({ favorites = [], isLoading = false, errorMessage = ''
   return (
     <section className="rounded-[28px] bg-zinc-200 p-4 shadow-sm ring-1 ring-zinc-300/70 sm:p-6">
       <h2 className="text-xl font-semibold text-zinc-900">Favorites</h2>
+
+      {loginHint ? <p className="mt-2 text-sm text-zinc-700">{loginHint}</p> : null}
 
       {favorites.length === 0 ? (
         <p className="mt-2 text-sm text-zinc-600">No favorites saved yet.</p>

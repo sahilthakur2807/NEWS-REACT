@@ -45,6 +45,12 @@ function getPool() {
 export async function ensureDatabaseSchema() {
   if (!schemaReadyPromise) {
     schemaReadyPromise = getPool().query(`
+      CREATE TABLE IF NOT EXISTS users (
+        uid TEXT PRIMARY KEY,
+        email TEXT,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS favorites (
         id SERIAL PRIMARY KEY,
         user_id TEXT NOT NULL DEFAULT 'legacy-user',
@@ -66,6 +72,9 @@ export async function ensureDatabaseSchema() {
 
       ALTER TABLE favorites
       DROP CONSTRAINT IF EXISTS favorites_url_key;
+
+      ALTER TABLE favorites
+      DROP CONSTRAINT IF EXISTS favorites_user_url_unique;
 
       ALTER TABLE favorites
       ADD CONSTRAINT favorites_user_url_unique UNIQUE (user_id, url);

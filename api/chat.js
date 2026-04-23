@@ -1,4 +1,5 @@
 import { createArticleMessage, listArticleMessages } from '../server/chatStore.js'
+import { requireAuth } from '../server/auth.js'
 
 function parseLimit(value, fallback = 50) {
   const parsed = Number(value)
@@ -19,31 +20,39 @@ export default async function handler(req, res) {
     }
 
     try {
+      await requireAuth(req)
       const messages = await listArticleMessages(articleId, limit)
       res.status(200).json({ messages })
       return
     } catch (_error) {
-      res.status(500).json({ message: 'Failed to load chat history.' })
+      res.status(_error?.statusCode || 500).json({
+        message:
+          _error?.statusCode === 401
+            ? 'Login required.'
+            : _error?.message || 'Failed to load chat history.',
+      })
       return
     }
   }
 
   if (req.method === 'POST') {
     const articleId = String(req.body?.articleId || '').trim()
-    const userId = String(req.body?.userId || '').trim()
     const message = String(req.body?.message || '').trim()
 
-    if (!articleId || !userId || !message) {
-      res.status(400).json({ message: 'articleId, userId, and message are required.' })
+    if (!articleId || !message) {
+      res.status(400).json({ message: 'articleId and message are required.' })
       return
     }
 
     try {
-      const created = await createArticleMessage({ articleId, userId, message })
+      const { uid } = await requireAuth(req)
+      const created = await createArticleMessage({ articleId, userId: uid, message })
       res.status(201).json({ message: created })
       return
     } catch (error) {
-      res.status(400).json({ message: error?.message || 'Failed to save message.' })
+      res.status(error?.statusCode || 400).json({
+        message: error?.statusCode === 401 ? 'Login required.' : error?.message || 'Failed to save message.',
+      })
       return
     }
   }

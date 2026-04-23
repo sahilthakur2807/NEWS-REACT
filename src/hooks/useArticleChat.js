@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getChatSocket, isRealtimeChatEnabled } from '../services/chatSocket'
 import { getChatHistory, postChatMessage } from '../services/chatService'
+import { useAuth } from '../auth/AuthProvider'
 
 const CHAT_USER_ID_KEY = 'news_app_chat_user_id'
 
@@ -34,11 +35,19 @@ export default function useArticleChat(articleId) {
   const [error, setError] = useState('')
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
 
-  const userId = useMemo(() => getOrCreateChatUserId(), [])
+  const { user, isAuthReady } = useAuth()
+  const userId = useMemo(() => (user?.uid ? user.uid : getOrCreateChatUserId()), [user?.uid])
   const realtimeEnabled = useMemo(() => isRealtimeChatEnabled(), [])
 
   useEffect(() => {
     if (!articleId) {
+      return undefined
+    }
+
+    if (isAuthReady && !user) {
+      setMessages([])
+      setError('')
+      setIsLoadingHistory(false)
       return undefined
     }
 
@@ -106,7 +115,7 @@ export default function useArticleChat(articleId) {
       socket.off('chat_error', handleError)
       socket.off('connect_error', handleError)
     }
-  }, [articleId, userId, realtimeEnabled])
+  }, [articleId, userId, realtimeEnabled, isAuthReady, user])
 
   const sendMessage = useCallback(
     (content) => {
@@ -118,7 +127,7 @@ export default function useArticleChat(articleId) {
 
       if (!realtimeEnabled) {
         setError('')
-        postChatMessage({ articleId, userId, message })
+        postChatMessage({ articleId, message })
           .then((created) => {
             setMessages((currentMessages) => [...currentMessages, created])
           })
