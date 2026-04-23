@@ -1,4 +1,4 @@
-# News App (Feature 1 Scaffold)
+# News App
 
 This repository contains the initial scaffold for a full-stack News App:
 
@@ -73,9 +73,40 @@ Defined in `.env.example`:
 - Keep it empty for deployment so frontend requests use relative `/api/*` paths.
 - Optional for local development; if set, use `http://localhost:5000`.
 
+## Runtime Features
+
+- Category tabs fetch category-specific news.
+- Date filter loads news for the selected date.
+- If date is not selected, news loads for the present day.
+- Favorites are persisted to PostgreSQL/Neon via `/api/favorites`.
+
+## Database Setup
+
+Favorites table is auto-created on first favorites request:
+
+```sql
+CREATE TABLE IF NOT EXISTS favorites (
+	id SERIAL PRIMARY KEY,
+	title TEXT NOT NULL,
+	url TEXT UNIQUE NOT NULL,
+	source TEXT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ## Notes
 
 - Vite dev proxy forwards `/api/*` requests to `http://localhost:5000`.
 - Serverless handlers in `/api` are deployment-ready for platforms like Vercel.
 - Tailwind is integrated via the official `@tailwindcss/vite` plugin.
-- This commit is scaffold-only. Feature logic is added incrementally in later features.
+
+## Vercel Deployment
+
+1. Import this repository in Vercel.
+2. Add environment variables in Project Settings:
+	- `NEWS_API_KEY`
+	- `POSTGRES_URL` (recommended for Neon)
+	- `PGSSL=true` (recommended for Neon)
+3. Keep `VITE_API_BASE_URL` empty for deployment so frontend uses relative `/api/*` routes.
+
+This project uses Vercel-style serverless handlers in `/api`, so both news and favorites APIs are deployment-ready.

@@ -1,4 +1,5 @@
 const categories = [
+  'Top Stories',
   'Science',
   'Health',
   'Business',
@@ -7,37 +8,55 @@ const categories = [
   'Entertainment',
 ]
 
-function Header() {
+function Header({ activeCategory = 'top stories', onCategoryChange }) {
+  const handleCategoryClick = (event, value) => {
+    event.preventDefault()
+    onCategoryChange?.(value)
+  }
+
   return (
-    <header className="rounded-[32px] bg-zinc-200 px-5 py-6 text-zinc-900 shadow-sm ring-1 ring-zinc-300/70 sm:px-8 sm:py-8">
+    <header className="border border-zinc-300 bg-zinc-50">
+      <div className="flex items-center justify-between border-b border-zinc-300 px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-600 sm:px-6">
+        <div className="flex items-center gap-3">
+          <span>Menu</span>
+          <span className="hidden sm:inline">Briefing</span>
+        </div>
+      </div>
+
+      <div className="border-b border-zinc-300 px-4 py-5 text-center sm:px-6">
+        <h1 className="font-hedvig text-5xl leading-none tracking-tight text-zinc-950 sm:text-6xl">
+          Today&apos;s New's
+        </h1>
+        <p className="mt-2 text-sm text-zinc-600 sm:text-base">
+          Stay updated with the latest global headlines
+        </p>
+      </div>
+
       <nav
         aria-label="News categories"
-        className="-mx-1 mb-6 flex gap-3 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0"
+        className="flex gap-5 overflow-x-auto px-4 py-3 text-sm font-medium text-zinc-700 sm:flex-wrap sm:overflow-visible sm:px-6"
       >
         {categories.map((category) => {
           const value = category.toLowerCase()
+          const isActive = activeCategory === value
 
           return (
             <a
               key={value}
               href="#"
               data-category={value}
-              className="shrink-0 rounded-full bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-300 hover:text-zinc-950"
+              onClick={(event) => handleCategoryClick(event, value)}
+              className={`shrink-0 border-b pb-1 transition hover:border-zinc-900 hover:text-zinc-950 ${
+                isActive
+                  ? 'border-zinc-900 text-zinc-950'
+                  : 'border-transparent text-zinc-700'
+              }`}
             >
               {category}
             </a>
           )
         })}
       </nav>
-
-      <div className="space-y-3">
-        <h1 className="font-hedvig text-4xl tracking-tight text-zinc-950 sm:text-5xl">
-          Today&apos;s News
-        </h1>
-        <p className="max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg">
-          Stay updated with the latest global headlines
-        </p>
-      </div>
     </header>
   )
 }

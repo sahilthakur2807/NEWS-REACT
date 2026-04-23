@@ -1,7 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif&family=Libre+Franklin:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 body {
   margin: 0;
+  background: #f4f4f4;
+  color: #161616;
+  font-family: 'Libre Franklin', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Hedvig Letters Serif', serif;
 }

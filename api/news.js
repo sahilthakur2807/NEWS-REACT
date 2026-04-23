@@ -12,7 +12,11 @@ export default async function handler(req, res) {
   }
 
   const query = String(req.query.q || 'latest').trim()
-  const from = String(req.query.from || '').trim()
+  const usNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
+  usNow.setDate(usNow.getDate() - 1)
+  const defaultDate = usNow.toISOString().slice(0, 10)
+  const from = String(req.query.from || defaultDate).trim()
+  const to = String(req.query.to || from).trim()
   const pageSize = Math.min(Number(req.query.pageSize || 12), 30)
 
   const params = new URLSearchParams({
@@ -24,6 +28,7 @@ export default async function handler(req, res) {
 
   if (from) {
     params.set('from', from)
+    params.set('to', to)
   }
 
   try {

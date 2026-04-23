@@ -1,68 +1,88 @@
-function getTileSpanClasses(index) {
-  const mod = index % 6
-
-  if (mod === 0) {
-    return 'md:col-span-2 md:row-span-3'
-  }
-
-  if (mod === 3) {
-    return 'col-span-1 row-span-1'
-  }
-
-  return 'col-span-1 row-span-2'
-}
-
-function getImageHeightClass(index) {
-  const mod = index % 6
-
-  if (mod === 0) {
-    return 'h-56 md:h-72'
-  }
-
-  if (mod === 3) {
-    return 'h-28 md:h-32'
-  }
-
-  return 'h-40 md:h-44'
-}
-
-function NewsTile({ article, index }) {
+function NewsTile({ article, variant = 'standard', onAddFavorite, isSaved = false }) {
   const { title, source, date, image, url } = article
   const fallbackImage =
     'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1400&q=80'
 
-  return (
-    <article
-      className={`group relative flex h-full min-h-0 flex-col overflow-hidden rounded-sm border border-zinc-300 bg-zinc-50 ${getTileSpanClasses(index)}`}
-    >
-      <div className={`relative overflow-hidden ${getImageHeightClass(index)}`}>
-        <img
-          src={image || fallbackImage}
-          alt={title}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-        />
+  const handleAddFavorite = () => {
+    if (!url || !onAddFavorite || isSaved) {
+      return
+    }
 
-        <button
-          type="button"
-          className="absolute right-3 top-3 rounded-full border border-zinc-200 bg-zinc-900/85 px-3 py-1.5 text-xs font-medium text-zinc-50 opacity-0 transition duration-200 group-hover:opacity-100"
+    onAddFavorite({ title, source, url })
+  }
+
+  const NewsImage = ({ className }) => (
+    <div className={`group relative overflow-hidden border-zinc-300 bg-zinc-100 ${className}`}>
+      <img
+        src={image || fallbackImage}
+        alt={title}
+        className="m-center h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+      />
+
+      <button
+        type="button"
+        onClick={handleAddFavorite}
+        disabled={!url || isSaved}
+        className="absolute right-2 top-2 rounded-full border border-zinc-200 bg-zinc-900/85 px-2.5 py-1 text-[11px] font-medium text-zinc-50 opacity-0 transition duration-200 group-hover:opacity-100"
+      >
+        {isSaved ? 'Saved' : 'Add to Favorites'}
+      </button>
+    </div>
+  )
+
+  const CardTitle = (
+    <>
+      {url ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="break-words text-zinc-900 transition hover:underline"
         >
-          Add to Favorites
-        </button>
-      </div>
+          {title}
+        </a>
+      ) : (
+        <p className="break-words text-zinc-900">{title}</p>
+      )}
+    </>
+  )
 
-      <div className="flex flex-1 flex-col justify-between gap-3 p-4">
-        {url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="line-clamp-4 text-xl leading-tight text-zinc-900 hover:underline"
-          >
-            {title}
-          </a>
-        ) : (
-          <p className="line-clamp-4 text-xl leading-tight text-zinc-900">{title}</p>
-        )}
+  if (variant === 'compact') {
+    return (
+      <article className="flex items-start gap-3 border-b border-zinc-300 pb-4 last:border-b-0 last:pb-0">
+        <div className="min-w-0 flex-1 space-y-2">
+          <h3 className="text-3xl leading-tight">{CardTitle}</h3>
+          <p className="text-xs uppercase tracking-wide text-zinc-600">
+            {source} • {date}
+          </p>
+        </div>
+
+        <NewsImage className="h-24 w-24 border" />
+      </article>
+    )
+  }
+
+  if (variant === 'feature') {
+    return (
+      <article className="border border-zinc-300 bg-white">
+        <NewsImage className="h-64 w-full border-b md:h-[430px]" />
+
+        <div className="space-y-3 p-5">
+          <h3 className="text-5xl leading-tight">{CardTitle}</h3>
+          <p className="text-xs uppercase tracking-wide text-zinc-600">
+            {source} • {date}
+          </p>
+        </div>
+      </article>
+    )
+  }
+
+  return (
+    <article className="group flex h-full flex-col border border-zinc-300 bg-white transition hover:bg-zinc-50">
+      <NewsImage className="h-44 w-full border-b" />
+
+      <div className="space-y-3 p-4">
+        <h3 className="text-4xl leading-tight">{CardTitle}</h3>
         <p className="text-xs uppercase tracking-wide text-zinc-600">
           {source} • {date}
         </p>
