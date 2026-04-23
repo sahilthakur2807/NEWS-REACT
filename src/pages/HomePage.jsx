@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Header from '../components/Header'
 import ControlsRow from '../components/ControlsRow'
 import NewsGallery from '../components/NewsGallery'
@@ -23,6 +23,7 @@ function HomePage() {
     deleteFavorite,
     isFavorite,
   } = useFavorites()
+  const hasLoadedInitialHeadlines = useRef(false)
 
   const loadNews = useCallback(async ({ category } = {}) => {
     setIsLoading(true)
@@ -65,8 +66,17 @@ function HomePage() {
     [saveFavorite],
   )
 
+  useEffect(() => {
+    if (hasLoadedInitialHeadlines.current) {
+      return
+    }
+
+    hasLoadedInitialHeadlines.current = true
+    loadNews({ category: 'top stories' })
+  }, [loadNews])
+
   return (
-    <main className="min-h-screen bg-zinc-100 px-3 py-4 text-zinc-900 sm:px-5 lg:px-7">
+    <main className="min-h-screen bg-zinc-100 px-4 py-4 text-zinc-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-5">
         <Header activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
         <ControlsRow
