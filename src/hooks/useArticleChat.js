@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getChatSocket, isRealtimeChatEnabled } from '../services/chatSocket'
+import { getChatHistory, postChatMessage } from '../services/chatService'
 
 const CHAT_USER_ID_KEY = 'news_app_chat_user_id'
 
@@ -42,7 +43,25 @@ export default function useArticleChat(articleId) {
     }
 
     if (!realtimeEnabled) {
-      return undefined
+      let isActive = true
+      setIsLoadingHistory(true)
+      setError('')
+
+      getChatHistory({ articleId })
+        .then((history) => {
+          if (!isActive) return
+          setMessages(history)
+          setIsLoadingHistory(false)
+        })
+        .catch((err) => {
+          if (!isActive) return
+          setError(err?.message || 'Unable to load chat right now.')
+          setIsLoadingHistory(false)
+        })
+
+      return () => {
+        isActive = false
+      }
     }
 
     const socket = getChatSocket()
@@ -97,6 +116,18 @@ export default function useArticleChat(articleId) {
         return false
       }
 
+      if (!realtimeEnabled) {
+        setError('')
+        postChatMessage({ articleId, userId, message })
+          .then((created) => {
+            setMessages((currentMessages) => [...currentMessages, created])
+          })
+          .catch((err) => {
+            setError(err?.message || 'Unable to send message right now.')
+          })
+        return true
+      }
+
       const socket = getChatSocket()
 
       if (!socket) {
@@ -112,14 +143,15 @@ export default function useArticleChat(articleId) {
 
       return true
     },
-    [articleId, userId],
+    [articleId, userId, realtimeEnabled],
   )
 
   return {
     messages,
-    error: realtimeEnabled ? error : 'Realtime chat is disabled for this environment.',
+    error,
     userId,
-    isLoadingHistory: realtimeEnabled ? isLoadingHistory : false,
+    isLoadingHistory,
     sendMessage,
+    realtimeEnabled,
   }
 }

@@ -47,11 +47,31 @@ export async function ensureDatabaseSchema() {
     schemaReadyPromise = getPool().query(`
       CREATE TABLE IF NOT EXISTS favorites (
         id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT 'legacy-user',
         title TEXT NOT NULL,
-        url TEXT UNIQUE NOT NULL,
+        url TEXT NOT NULL,
         source TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE favorites
+      ADD COLUMN IF NOT EXISTS user_id TEXT;
+
+      UPDATE favorites
+      SET user_id = 'legacy-user'
+      WHERE user_id IS NULL OR user_id = '';
+
+      ALTER TABLE favorites
+      ALTER COLUMN user_id SET NOT NULL;
+
+      ALTER TABLE favorites
+      DROP CONSTRAINT IF EXISTS favorites_url_key;
+
+      ALTER TABLE favorites
+      DROP CONSTRAINT IF EXISTS favorites_user_url_unique;
+
+      ALTER TABLE favorites
+      ADD CONSTRAINT favorites_user_url_unique UNIQUE (user_id, url);
 
       CREATE TABLE IF NOT EXISTS chat_messages (
         id SERIAL PRIMARY KEY,

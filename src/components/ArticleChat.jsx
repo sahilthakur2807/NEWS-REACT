@@ -19,7 +19,7 @@ function formatChatTimestamp(value) {
   })
 }
 
-function ArticleChat({ messages, error, isLoadingHistory, onSendMessage }) {
+function ArticleChat({ messages, error, isLoadingHistory, onSendMessage, modeLabel = 'Database' }) {
   const [draftMessage, setDraftMessage] = useState('')
 
   const handleSubmit = (event) => {
@@ -36,7 +36,7 @@ function ArticleChat({ messages, error, isLoadingHistory, onSendMessage }) {
     <section className="space-y-4 border border-zinc-300 bg-zinc-50 p-4 sm:p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl leading-tight text-zinc-900">Live Article Chat</h2>
-        <span className="text-xs uppercase tracking-wide text-zinc-600">Realtime</span>
+        <span className="text-xs uppercase tracking-wide text-zinc-600">{modeLabel}</span>
       </div>
 
       {isLoadingHistory ? <p className="text-sm text-zinc-600">Loading chat history...</p> : null}

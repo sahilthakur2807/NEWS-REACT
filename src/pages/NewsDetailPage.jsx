@@ -47,6 +47,7 @@ function NewsDetailPage() {
     error: chatError,
     isLoadingHistory,
     sendMessage,
+    realtimeEnabled,
   } = useArticleChat(id)
 
   if (!article) {
@@ -102,6 +103,7 @@ function NewsDetailPage() {
             error={chatError}
             isLoadingHistory={isLoadingHistory}
             onSendMessage={sendMessage}
+            modeLabel={realtimeEnabled ? 'Realtime' : 'Database'}
           />
 
           <div className="flex flex-wrap gap-3 border-t border-zinc-300 pt-5">

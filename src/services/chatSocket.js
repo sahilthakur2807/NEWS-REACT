@@ -16,23 +16,19 @@ function isVercelDevHost() {
 
 export function isRealtimeChatEnabled() {
   const explicitToggle = import.meta.env.VITE_ENABLE_REALTIME_CHAT
-  const explicitSocketUrl = import.meta.env.VITE_CHAT_SOCKET_URL || import.meta.env.VITE_API_BASE_URL || ''
+  const explicitSocketUrl = import.meta.env.VITE_CHAT_SOCKET_URL || ''
 
   if (explicitToggle !== undefined) {
-    return toBoolean(explicitToggle)
+    return toBoolean(explicitToggle) && Boolean(explicitSocketUrl)
   }
 
-  // Under `vercel dev` (commonly :3000), disable implicit socket attempts unless explicitly configured.
-  if (isVercelDevHost() && !explicitSocketUrl) {
-    return false
-  }
-
-  return true
+  // Only enable realtime when a dedicated socket URL is configured.
+  // This avoids timeouts under `vercel dev` where no Socket.IO server exists.
+  return Boolean(explicitSocketUrl) && !isVercelDevHost()
 }
 
 function getSocketUrl() {
-  const configuredBase =
-    import.meta.env.VITE_CHAT_SOCKET_URL || import.meta.env.VITE_API_BASE_URL || ''
+  const configuredBase = import.meta.env.VITE_CHAT_SOCKET_URL || ''
 
   if (!configuredBase) {
     return undefined

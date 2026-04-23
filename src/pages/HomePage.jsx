@@ -73,7 +73,8 @@ function HomePage() {
 
     hasLoadedInitialHeadlines.current = true
     loadNews({ category: 'top stories' })
-  }, [loadNews])
+    loadFavorites()
+  }, [loadNews, loadFavorites])
 
   return (
     <main className="min-h-screen bg-zinc-100 px-4 py-4 text-zinc-900 sm:px-6 lg:px-8">
