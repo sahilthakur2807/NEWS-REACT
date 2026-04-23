@@ -50,7 +50,7 @@ function NewsGallery({
             <div className="space-y-4 border border-zinc-300 bg-white p-4 lg:col-span-4">
               {articles.slice(1, 4).map((article, index) => (
                 <NewsTile
-                  key={`${article.title}-${index}`}
+                  key={article.id || `${article.title}-${index}`}
                   article={article}
                   variant="compact"
                   onAddFavorite={onAddFavorite}
@@ -64,7 +64,7 @@ function NewsGallery({
             <div className="grid gap-4 border-t border-zinc-300 pt-5 md:grid-cols-2 lg:grid-cols-3">
               {articles.slice(4).map((article, index) => (
                 <NewsTile
-                  key={`${article.title}-${index + 4}`}
+                  key={article.id || `${article.title}-${index + 4}`}
                   article={article}
                   onAddFavorite={onAddFavorite}
                   isSaved={isFavorite(article?.url || '')}

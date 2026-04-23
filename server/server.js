@@ -77,6 +77,7 @@ app.get('/api/news', async (req, res) => {
             image: article.urlToImage || '',
             url: article.url || '',
             description: article.description || '',
+            content: article.content || '',
           }))
       : []
 
@@ -84,7 +85,7 @@ app.get('/api/news', async (req, res) => {
       articles,
       totalResults: payload.totalResults || 0,
     })
-  } catch (_error) {
+  } catch {
     res.status(500).json({ message: 'Unable to fetch news right now.' })
   }
 })
@@ -93,7 +94,7 @@ app.get('/api/favorites', async (_req, res) => {
   try {
     const favorites = await listFavorites()
     res.status(200).json({ favorites })
-  } catch (_error) {
+  } catch {
     res.status(500).json({ message: 'Failed to load favorites.' })
   }
 })

@@ -57,6 +57,7 @@ export default async function handler(req, res) {
             image: article.urlToImage || '',
             url: article.url || '',
             description: article.description || '',
+            content: article.content || '',
           }))
       : []
 
@@ -64,7 +65,7 @@ export default async function handler(req, res) {
       articles,
       totalResults: payload.totalResults || 0,
     })
-  } catch (_error) {
+  } catch {
     res.status(500).json({ message: 'Unable to fetch news right now.' })
   }
 }

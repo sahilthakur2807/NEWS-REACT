@@ -4,6 +4,7 @@ import ControlsRow from '../components/ControlsRow'
 import NewsGallery from '../components/NewsGallery'
 import FavoritesSection from '../components/FavoritesSection'
 import { fetchNews } from '../services/newsApi'
+import { cacheArticles } from '../services/articleCache'
 import useFavorites from '../hooks/useFavorites'
 
 function HomePage() {
@@ -35,7 +36,9 @@ function HomePage() {
         pageSize: 12,
       })
 
-      setArticles(Array.isArray(payload.articles) ? payload.articles : [])
+      const nextArticles = Array.isArray(payload.articles) ? payload.articles : []
+      setArticles(nextArticles)
+      cacheArticles(nextArticles)
     } catch (error) {
       setErrorMessage(error.message || 'Unable to load news right now.')
     } finally {
