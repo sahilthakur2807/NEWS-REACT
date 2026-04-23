@@ -3,12 +3,19 @@ import cors from 'cors'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import 'dotenv/config'
+import { deleteFavoriteByUrl, listFavorites, upsertFavorite } from './favoritesStore.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const clientDistPath = path.resolve(__dirname, '..', 'dist')
+
+function getUsPreviousDate() {
+  const usNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
+  usNow.setDate(usNow.getDate() - 1)
+  return usNow.toISOString().slice(0, 10)
+}
 
 app.use(cors())
 app.use(express.json())
@@ -27,7 +34,9 @@ app.get('/api/news', async (req, res) => {
   }
 
   const query = String(req.query.q || 'latest').trim()
-  const from = String(req.query.from || '').trim()
+  const defaultDate = getUsPreviousDate()
+  const from = String(req.query.from || defaultDate).trim()
+  const to = String(req.query.to || from).trim()
   const pageSize = Math.min(Number(req.query.pageSize || 12), 30)
 
   const params = new URLSearchParams({
@@ -39,6 +48,7 @@ app.get('/api/news', async (req, res) => {
 
   if (from) {
     params.set('from', from)
+    params.set('to', to)
   }
 
   try {
@@ -76,6 +86,41 @@ app.get('/api/news', async (req, res) => {
     })
   } catch (_error) {
     res.status(500).json({ message: 'Unable to fetch news right now.' })
+  }
+})
+
+app.get('/api/favorites', async (_req, res) => {
+  try {
+    const favorites = await listFavorites()
+    res.status(200).json({ favorites })
+  } catch (_error) {
+    res.status(500).json({ message: 'Failed to load favorites.' })
+  }
+})
+
+app.post('/api/favorites', async (req, res) => {
+  console.log('POST /api/favorites called');
+  try {
+    const article = req.body
+    const favorite = await upsertFavorite(article)
+    res.status(201).json({ favorite })
+  } catch (error) {
+    console.error('Failed to save favorite:', error)
+    res.status(500).json({ message: 'Failed to save favorite.' })
+  }
+})
+
+app.delete('/api/favorites', async (req, res) => {
+  try {
+    const { url } = req.query
+    if (!url) {
+      return res.status(400).json({ message: 'Missing URL query parameter.' })
+    }
+    await deleteFavoriteByUrl(url)
+    res.status(204).send()
+  } catch (error) {
+    console.error('Failed to delete favorite:', error)
+    res.status(500).json({ message: 'Failed to delete favorite.' })
   }
 })
 

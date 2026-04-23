@@ -1,6 +1,12 @@
 import NewsTile from './NewsTile'
 
-function NewsGallery({ articles = [], isLoading = false, errorMessage = '' }) {
+function NewsGallery({
+  articles = [],
+  isLoading = false,
+  errorMessage = '',
+  isFavorite = () => false,
+  onAddFavorite,
+}) {
   if (isLoading) {
     return (
       <section className="space-y-5 border-y border-zinc-300 bg-zinc-100 py-5">
@@ -20,8 +26,8 @@ function NewsGallery({ articles = [], isLoading = false, errorMessage = '' }) {
   }
 
   return (
-    <section className="space-y-5 border-y border-zinc-300 bg-zinc-100 py-5">
-      <h2 className="text-4xl leading-none text-zinc-900">Latest News</h2>
+    <section className="space-y-5 border-y border-zinc-300 bg-zinc-50 py-6">
+      <h2 className="text-5xl leading-none text-zinc-900">Latest News</h2>
 
       {articles.length === 0 ? (
         <p className="text-sm text-zinc-600">
@@ -29,11 +35,45 @@ function NewsGallery({ articles = [], isLoading = false, errorMessage = '' }) {
         </p>
       ) : null}
 
-      <div className="grid grid-flow-dense grid-cols-1 auto-rows-[140px] gap-3 md:grid-cols-2 lg:grid-cols-4">
-        {articles.map((article, index) => (
-          <NewsTile key={`${article.title}-${index}`} article={article} index={index} />
-        ))}
-      </div>
+      {articles.length > 0 ? (
+        <>
+          <div className="grid gap-5 border-t border-zinc-300 pt-5 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <NewsTile
+                article={articles[0]}
+                variant="feature"
+                onAddFavorite={onAddFavorite}
+                isSaved={isFavorite(articles[0]?.url || '')}
+              />
+            </div>
+
+            <div className="space-y-4 border border-zinc-300 bg-white p-4 lg:col-span-4">
+              {articles.slice(1, 4).map((article, index) => (
+                <NewsTile
+                  key={`${article.title}-${index}`}
+                  article={article}
+                  variant="compact"
+                  onAddFavorite={onAddFavorite}
+                  isSaved={isFavorite(article?.url || '')}
+                />
+              ))}
+            </div>
+          </div>
+
+          {articles.length > 4 ? (
+            <div className="grid gap-4 border-t border-zinc-300 pt-5 md:grid-cols-2 lg:grid-cols-3">
+              {articles.slice(4).map((article, index) => (
+                <NewsTile
+                  key={`${article.title}-${index + 4}`}
+                  article={article}
+                  onAddFavorite={onAddFavorite}
+                  isSaved={isFavorite(article?.url || '')}
+                />
+              ))}
+            </div>
+          ) : null}
+        </>
+      ) : null}
     </section>
   )
 }

@@ -5,16 +5,23 @@ function getEndpoint() {
   return normalizedBase ? `${normalizedBase}/api/news` : '/api/news'
 }
 
-export async function fetchNews({ query = '', from = '', pageSize = 12 } = {}) {
+export async function fetchNews({ category = '', query = '', from = '', pageSize = 12 } = {}) {
   const params = new URLSearchParams()
+  const normalizedCategory = category.trim().toLowerCase()
+  const normalizedQuery = query.trim()
+  const usNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
+  usNow.setDate(usNow.getDate() - 1)
+  const defaultDate = usNow.toISOString().slice(0, 10)
+  const effectiveDate = from.trim() || defaultDate
+  const effectiveQuery =
+    normalizedQuery || (normalizedCategory && normalizedCategory !== 'top stories' ? normalizedCategory : '')
 
-  if (query.trim()) {
-    params.set('q', query.trim())
+  if (effectiveQuery) {
+    params.set('q', effectiveQuery)
   }
 
-  if (from.trim()) {
-    params.set('from', from.trim())
-  }
+  params.set('from', effectiveDate)
+  params.set('to', effectiveDate)
 
   params.set('pageSize', String(pageSize))
 
