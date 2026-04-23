@@ -26,7 +26,7 @@ function NewsGallery({
   }
 
   return (
-    <section className="space-y-5 border-y border-zinc-300 bg-zinc-50 py-6">
+    <section className="space-y-5 border-y border-zinc-300 bg-zinc-50 px-2 py-6 sm:px-3">
       <h2 className="text-5xl leading-none text-zinc-900">Latest News</h2>
 
       {articles.length === 0 ? (

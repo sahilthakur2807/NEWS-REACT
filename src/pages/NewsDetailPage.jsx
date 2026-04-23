@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
+import ArticleChat from '../components/ArticleChat'
+import useArticleChat from '../hooks/useArticleChat'
 import { getCachedArticleById } from '../services/articleCache'
 
 function getArticleBody(article) {
@@ -40,6 +42,13 @@ function NewsDetailPage() {
   }, [id, location.state])
 
   const paragraphs = useMemo(() => getArticleBody(article), [article])
+  const {
+    messages,
+    error: chatError,
+    isLoadingHistory,
+    sendMessage,
+    realtimeEnabled,
+  } = useArticleChat(id)
 
   if (!article) {
     return (
@@ -88,6 +97,14 @@ function NewsDetailPage() {
               <p key={`${article.id || article.title}-${index}`}>{paragraph}</p>
             ))}
           </div>
+
+          <ArticleChat
+            messages={messages}
+            error={chatError}
+            isLoadingHistory={isLoadingHistory}
+            onSendMessage={sendMessage}
+            modeLabel={realtimeEnabled ? 'Realtime' : 'Database'}
+          />
 
           <div className="flex flex-wrap gap-3 border-t border-zinc-300 pt-5">
             <Link

@@ -1,12 +1,21 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'node:path'
+import { createServer } from 'node:http'
 import { fileURLToPath } from 'node:url'
+import { Server as SocketIOServer } from 'socket.io'
 import 'dotenv/config'
+import { createArticleMessage, listArticleMessages } from './chatStore.js'
 import { deleteFavoriteByUrl, listFavorites, upsertFavorite } from './favoritesStore.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
+const httpServer = createServer(app)
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: '*',
+  },
+})
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const clientDistPath = path.resolve(__dirname, '..', 'dist')
@@ -99,6 +108,23 @@ app.get('/api/favorites', async (_req, res) => {
   }
 })
 
+app.get('/api/chat/:articleId', async (req, res) => {
+  const articleId = String(req.params.articleId || '').trim()
+
+  if (!articleId) {
+    res.status(400).json({ message: 'Missing article id.' })
+    return
+  }
+
+  try {
+    const messages = await listArticleMessages(articleId, req.query.limit)
+    res.status(200).json({ messages })
+  } catch (error) {
+    console.error('Failed to load chat messages:', error)
+    res.status(500).json({ message: 'Failed to load chat messages.' })
+  }
+})
+
 app.post('/api/favorites', async (req, res) => {
   console.log('POST /api/favorites called');
   try {
@@ -129,6 +155,46 @@ app.get(/.*/, (_req, res) => {
   res.sendFile(path.join(clientDistPath, 'index.html'))
 })
 
-app.listen(PORT, () => {
+io.on('connection', (socket) => {
+  socket.on('join_article', async (payload = {}) => {
+    const articleId = String(payload.articleId || '').trim()
+
+    if (!articleId) {
+      socket.emit('chat_error', { message: 'Article id is required.' })
+      return
+    }
+
+    const room = `article:${articleId}`
+    socket.join(room)
+
+    try {
+      const messages = await listArticleMessages(articleId)
+      socket.emit('chat_history', { articleId, messages })
+    } catch (error) {
+      console.error('Failed to load chat history:', error)
+      socket.emit('chat_error', { message: 'Failed to load chat history.' })
+    }
+  })
+
+  socket.on('send_message', async (payload = {}) => {
+    const articleId = String(payload.articleId || '').trim()
+    const userId = String(payload.userId || '').trim()
+    const message = String(payload.message || '').trim()
+
+    if (!articleId || !userId || !message) {
+      socket.emit('chat_error', { message: 'Article id, user id, and message are required.' })
+      return
+    }
+
+    try {
+      const savedMessage = await createArticleMessage({ articleId, userId, message })
+      io.to(`article:${articleId}`).emit('chat_message', savedMessage)
+    } catch (error) {
+      socket.emit('chat_error', { message: error.message || 'Failed to send message.' })
+    }
+  })
+})
+
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
