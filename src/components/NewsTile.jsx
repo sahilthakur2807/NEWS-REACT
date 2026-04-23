@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom'
+
 function NewsTile({ article, variant = 'standard', onAddFavorite, isSaved = false }) {
-  const { title, source, date, image, url } = article
+  const { id, title, source, date, image, url } = article
   const fallbackImage =
     'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1400&q=80'
 
@@ -11,7 +13,7 @@ function NewsTile({ article, variant = 'standard', onAddFavorite, isSaved = fals
     onAddFavorite({ title, source, url })
   }
 
-  const NewsImage = ({ className }) => (
+  const renderNewsImage = (className) => (
     <div className={`group relative overflow-hidden border-zinc-300 bg-zinc-100 ${className}`}>
       <img
         src={image || fallbackImage}
@@ -32,15 +34,14 @@ function NewsTile({ article, variant = 'standard', onAddFavorite, isSaved = fals
 
   const CardTitle = (
     <>
-      {url ? (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
+      {id ? (
+        <Link
+          to={`/news/${id}`}
+          state={{ article }}
           className="break-words text-zinc-900 transition hover:underline"
         >
           {title}
-        </a>
+        </Link>
       ) : (
         <p className="break-words text-zinc-900">{title}</p>
       )}
@@ -57,7 +58,7 @@ function NewsTile({ article, variant = 'standard', onAddFavorite, isSaved = fals
           </p>
         </div>
 
-        <NewsImage className="h-24 w-24 border" />
+        {renderNewsImage('h-24 w-24 border')}
       </article>
     )
   }
@@ -65,7 +66,7 @@ function NewsTile({ article, variant = 'standard', onAddFavorite, isSaved = fals
   if (variant === 'feature') {
     return (
       <article className="border border-zinc-300 bg-white">
-        <NewsImage className="h-64 w-full border-b md:h-[430px]" />
+        {renderNewsImage('h-64 w-full border-b md:h-[430px]')}
 
         <div className="space-y-3 p-5">
           <h3 className="text-5xl leading-tight">{CardTitle}</h3>
@@ -79,7 +80,7 @@ function NewsTile({ article, variant = 'standard', onAddFavorite, isSaved = fals
 
   return (
     <article className="group flex h-full flex-col border border-zinc-300 bg-white transition hover:bg-zinc-50">
-      <NewsImage className="h-44 w-full border-b" />
+      {renderNewsImage('h-44 w-full border-b')}
 
       <div className="space-y-3 p-4">
         <h3 className="text-4xl leading-tight">{CardTitle}</h3>

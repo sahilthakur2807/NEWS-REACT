@@ -1,5 +1,21 @@
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
 
+function hashString(value) {
+  let hash = 0
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(index)
+    hash |= 0
+  }
+
+  return Math.abs(hash).toString(36)
+}
+
+function createArticleId(article, index) {
+  const seed = `${article.url || ''}|${article.title || ''}|${article.date || ''}|${index}`
+  return `news-${hashString(seed)}`
+}
+
 function getEndpoint() {
   const normalizedBase = apiBaseUrl.replace(/\/$/, '')
   return normalizedBase ? `${normalizedBase}/api/news` : '/api/news'
@@ -32,5 +48,17 @@ export async function fetchNews({ category = '', query = '', from = '', pageSize
     throw new Error(payload.message || 'Failed to fetch news.')
   }
 
-  return payload
+  const normalizedArticles = Array.isArray(payload.articles)
+    ? payload.articles.map((article, index) => ({
+        ...article,
+        id: article.id || createArticleId(article, index),
+        content: article.content || '',
+        description: article.description || '',
+      }))
+    : []
+
+  return {
+    ...payload,
+    articles: normalizedArticles,
+  }
 }
