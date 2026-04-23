@@ -27,7 +27,9 @@ function getImageHeightClass(index) {
 }
 
 function NewsTile({ article, index }) {
-  const { title, source, date, image } = article
+  const { title, source, date, image, url } = article
+  const fallbackImage =
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1400&q=80'
 
   return (
     <article
@@ -35,7 +37,7 @@ function NewsTile({ article, index }) {
     >
       <div className={`relative overflow-hidden ${getImageHeightClass(index)}`}>
         <img
-          src={image}
+          src={image || fallbackImage}
           alt={title}
           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
         />
@@ -49,7 +51,18 @@ function NewsTile({ article, index }) {
       </div>
 
       <div className="flex flex-1 flex-col justify-between gap-3 p-4">
-        <p className="line-clamp-4 text-xl leading-tight text-zinc-900">{title}</p>
+        {url ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="line-clamp-4 text-xl leading-tight text-zinc-900 hover:underline"
+          >
+            {title}
+          </a>
+        ) : (
+          <p className="line-clamp-4 text-xl leading-tight text-zinc-900">{title}</p>
+        )}
         <p className="text-xs uppercase tracking-wide text-zinc-600">
           {source} • {date}
         </p>
