@@ -8,18 +8,17 @@ export async function listFavorites() {
 }
 
 export async function upsertFavorite({ title, url, source }) {
-  const userId = 'legacy-user'
   const result = await dbQuery(
     `
-      INSERT INTO favorites (user_id, title, url, source)
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT (user_id, url)
+      INSERT INTO favorites (title, url, source)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (url)
       DO UPDATE SET
         title = EXCLUDED.title,
         source = EXCLUDED.source
       RETURNING id, title, url, source, created_at;
     `,
-    [userId, title, url, source],
+    [title, url, source],
   )
 
   return result.rows[0]

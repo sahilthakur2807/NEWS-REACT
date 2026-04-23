@@ -68,9 +68,6 @@ export async function ensureDatabaseSchema() {
       DROP CONSTRAINT IF EXISTS favorites_url_key;
 
       ALTER TABLE favorites
-      DROP CONSTRAINT IF EXISTS favorites_user_url_unique;
-
-      ALTER TABLE favorites
       ADD CONSTRAINT favorites_user_url_unique UNIQUE (user_id, url);
 
       CREATE TABLE IF NOT EXISTS chat_messages (
