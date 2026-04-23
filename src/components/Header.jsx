@@ -1,3 +1,7 @@
+import { useState } from 'react'
+import AuthModal from '../auth/AuthModal'
+import { useAuth } from '../auth/AuthProvider'
+
 const categories = [
   'Top Stories',
   'Science',
@@ -9,6 +13,9 @@ const categories = [
 ]
 
 function Header({ activeCategory = 'top stories', onCategoryChange }) {
+  const { user, isAuthReady, signOut } = useAuth()
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+
   const handleCategoryClick = (event, value) => {
     event.preventDefault()
     onCategoryChange?.(value)
@@ -20,6 +27,29 @@ function Header({ activeCategory = 'top stories', onCategoryChange }) {
         <div className="flex items-center gap-3">
           <span>Menu</span>
           <span className="hidden sm:inline">Briefing</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {isAuthReady && user ? (
+            <>
+              <span className="hidden sm:inline normal-case text-zinc-700">{user.email || user.uid}</span>
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="border border-zinc-300 bg-white px-3 py-1 text-[11px] uppercase tracking-wide text-zinc-700 hover:bg-zinc-50"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="border border-zinc-900 bg-zinc-900 px-3 py-1 text-[11px] uppercase tracking-wide text-zinc-50 hover:bg-zinc-800"
+            >
+              Login
+            </button>
+          )}
         </div>
       </div>
 
@@ -57,6 +87,8 @@ function Header({ activeCategory = 'top stories', onCategoryChange }) {
           )
         })}
       </nav>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </header>
   )
 }

@@ -1,3 +1,4 @@
+import { authFetch } from './authFetch'
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
 
 function getFavoritesEndpoint() {
@@ -16,13 +17,13 @@ async function parseResponse(response) {
 }
 
 export async function getFavorites() {
-  const response = await fetch(getFavoritesEndpoint())
+  const response = await authFetch(getFavoritesEndpoint())
   const payload = await parseResponse(response)
   return Array.isArray(payload.favorites) ? payload.favorites : []
 }
 
 export async function addFavorite(article) {
-  const response = await fetch(getFavoritesEndpoint(), {
+  const response = await authFetch(getFavoritesEndpoint(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +40,7 @@ export async function addFavorite(article) {
 }
 
 export async function removeFavorite(url) {
-  const response = await fetch(getFavoritesEndpoint(), {
+  const response = await authFetch(getFavoritesEndpoint(), {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

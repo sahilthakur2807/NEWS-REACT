@@ -1,13 +1,20 @@
 import { deleteFavoriteByUrl, listFavorites, upsertFavorite } from '../server/favoritesStore.js'
+import { requireAuth } from '../server/auth.js'
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const favorites = await listFavorites()
+      const { uid } = await requireAuth(req)
+      const favorites = await listFavorites(uid)
       res.status(200).json({ favorites })
       return
     } catch (_error) {
-      res.status(500).json({ message: 'Failed to load favorites.' })
+      res.status(_error?.statusCode || 500).json({
+        message:
+          _error?.statusCode === 401
+            ? 'Login required.'
+            : _error?.message || 'Failed to load favorites.',
+      })
       return
     }
   }
@@ -23,11 +30,17 @@ export default async function handler(req, res) {
     }
 
     try {
-      const favorite = await upsertFavorite({ title, url, source })
+      const { uid } = await requireAuth(req)
+      const favorite = await upsertFavorite({ userId: uid, title, url, source })
       res.status(200).json({ favorite })
       return
     } catch (_error) {
-      res.status(500).json({ message: 'Failed to save favorite.' })
+      res.status(_error?.statusCode || 500).json({
+        message:
+          _error?.statusCode === 401
+            ? 'Login required.'
+            : _error?.message || 'Failed to save favorite.',
+      })
       return
     }
   }
@@ -41,7 +54,8 @@ export default async function handler(req, res) {
     }
 
     try {
-      const deleted = await deleteFavoriteByUrl(url)
+      const { uid } = await requireAuth(req)
+      const deleted = await deleteFavoriteByUrl({ userId: uid, url })
 
       if (!deleted) {
         res.status(404).json({ message: 'Favorite not found.' })
@@ -51,7 +65,12 @@ export default async function handler(req, res) {
       res.status(200).json({ ok: true })
       return
     } catch (_error) {
-      res.status(500).json({ message: 'Failed to delete favorite.' })
+      res.status(_error?.statusCode || 500).json({
+        message:
+          _error?.statusCode === 401
+            ? 'Login required.'
+            : _error?.message || 'Failed to delete favorite.',
+      })
       return
     }
   }

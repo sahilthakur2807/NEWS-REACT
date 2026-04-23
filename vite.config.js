@@ -6,19 +6,26 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const enableRealtimeChat = String(env.VITE_ENABLE_REALTIME_CHAT || '').toLowerCase() === 'true'
+  const isVercelDev = String(env.VERCEL || process.env.VERCEL || '').toLowerCase() === '1'
 
-  const proxy = {
-    '/api': {
+  const proxy = {}
+
+  // When running `vercel dev`, API routes are served by Vercel locally.
+  // Avoid proxying /api to the legacy Express server.
+  if (!isVercelDev) {
+    proxy['/api'] = {
       target: 'http://localhost:5000',
       changeOrigin: true,
-    },
+    }
   }
 
   if (enableRealtimeChat) {
-    proxy['/socket.io'] = {
-      target: 'http://localhost:5000',
-      ws: true,
-      changeOrigin: true,
+    if (!isVercelDev) {
+      proxy['/socket.io'] = {
+        target: 'http://localhost:5000',
+        ws: true,
+        changeOrigin: true,
+      }
     }
   }
 
